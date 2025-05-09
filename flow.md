@@ -1,0 +1,7 @@
+- 1: write models OK
+- 2: Docker + migrations OK
+- 3: generate typed queries (sqlc)
+- 4: implement user repo interface
+- 5 write user service (create user, find by email, etc)
+- 6: http handler + router
+- 7: same for messages
