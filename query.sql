@@ -5,7 +5,7 @@ SELECT id, username, password, created_at
 FROM users
 WHERE username = $1;
 
--- name: CreateUser :execlastid
+-- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
 RETURNING id, created_at;
@@ -32,7 +32,7 @@ WHERE (sender_id = $1 AND rec_id = $2) OR (sender_id = $2 AND rec_id = $1)
 ORDER BY created_at DESC;
 
 
--- name: CreateMessage :execlastid
+-- name: CreateMessage :one
 INSERT INTO messages (sender_id, rec_id, body)
 VALUES ($1, $2, $3)
 RETURNING id, created_at;
