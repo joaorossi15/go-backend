@@ -8,9 +8,7 @@ LABEL maintainer="Joao Rossi <joaorossiborba@gmail.com>"
 
 WORKDIR /app
 
-COPY go.mod ./
-
-# COPY go.sum ./ 2>/dev/null || true
+COPY go.mod go.sum ./
 
 RUN go mod download
 

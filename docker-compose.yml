@@ -1,19 +1,5 @@
 services:
 
-  web:
-    build:
-      context: . 
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080" 
-    restart: unless-stopped
-    depends_on: 
-      - db 
-    environment: 
-       - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres   
-    networks: 
-      - backend
-
   db:
     image: "postgres:16"     
     container_name: db
@@ -23,8 +9,42 @@ services:
       - POSTGRES_DB=postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     networks:
+      - backend
+
+  migrate:
+    image: migrate/migrate:4
+    volumes:
+      - ./db/migrations:/migrations
+    networks: [backend]
+    command:
+      [
+        "-path", "/migrations",
+        "-database", "postgres://postgres:postgres@db:5432/postgres?sslmode=disable",
+        "up"
+      ]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" 
+    depends_on: 
+      db:
+        condition: service_healthy
+    environment: 
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    networks: 
       - backend
 
 volumes:
