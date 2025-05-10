@@ -7,9 +7,11 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createMessage = `-- name: CreateMessage :execlastid
+const createMessage = `-- name: CreateMessage :one
 INSERT INTO messages (sender_id, rec_id, body)
 VALUES ($1, $2, $3)
 RETURNING id, created_at
@@ -21,7 +23,19 @@ type CreateMessageParams struct {
 	Body     string
 }
 
-const createUser = `-- name: CreateUser :execlastid
+type CreateMessageRow struct {
+	ID        int64
+	CreatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (CreateMessageRow, error) {
+	row := q.db.QueryRow(ctx, createMessage, arg.SenderID, arg.RecID, arg.Body)
+	var i CreateMessageRow
+	err := row.Scan(&i.ID, &i.CreatedAt)
+	return i, err
+}
+
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
 RETURNING id, created_at
@@ -30,6 +44,18 @@ RETURNING id, created_at
 type CreateUserParams struct {
 	Username string
 	Password []byte
+}
+
+type CreateUserRow struct {
+	ID        int64
+	CreatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+	row := q.db.QueryRow(ctx, createUser, arg.Username, arg.Password)
+	var i CreateUserRow
+	err := row.Scan(&i.ID, &i.CreatedAt)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one
