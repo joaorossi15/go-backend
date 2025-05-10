@@ -21,13 +21,13 @@ func CreateUserRepo(pool *pgxpool.Pool) *UserR {
 	return &UserR{q: sqlc.New(pool)}
 }
 
-func (usr *UserR) Get(ctx context.Context, name string) (sqlc.User, error) {
+func (usr *UserR) Get(ctx context.Context, name string) (int64, string, error) {
 	user, err := usr.q.GetUser(ctx, name)
 	if err != nil {
-		return sqlc.User{}, err
+		return 0, "", err
 	}
 
-	return user, nil
+	return user.ID, user.Username, nil
 }
 
 func (usr *UserR) Create(ctx context.Context, name string, password []byte) (int64, error) {

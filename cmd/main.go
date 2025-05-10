@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -21,23 +20,9 @@ func main() {
 	defer pool.Close()
 
 	userRepo := user.CreateUserRepo(pool)
+	createUserHandler := user.PostUserHandler(userRepo)
 
-	mux.HandleFunc("POST /user/post/", func(w http.ResponseWriter, r *http.Request) {
-		id, err := userRepo.Create(context.Background(), "name", []byte("password"))
-		if err != nil {
-			log.Fatalf("%s", err)
-		}
-
-		fmt.Fprintf(w, "User %d created!", id)
-	})
-
-	mux.HandleFunc("GET /user/get/", func(w http.ResponseWriter, r *http.Request) {
-		usr, err := userRepo.Get(context.Background(), "name")
-		if err != nil {
-			log.Fatalf("%s", err)
-		}
-		fmt.Fprintf(w, "User info: %d, %s", usr.ID, usr.Username)
-	})
+	mux.HandleFunc("POST /user/post/", createUserHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
