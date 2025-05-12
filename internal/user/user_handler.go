@@ -17,6 +17,41 @@ type Response struct {
 	Name string `json:"name"`
 }
 
+func GetUserByIdHandler(repo *UserR) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// get id
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+
+		// try get user
+		usrID, usrName, err := repo.Get(r.Context(), name)
+		if err != nil {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+
+		// return user info
+		resp := Response{ID: int64(usrID), Name: usrName}
+		var b bytes.Buffer
+		if err := json.NewEncoder(&b).Encode(resp); err != nil {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(b.Bytes())
+	}
+}
+
 func PostUserHandler(repo *UserR) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
