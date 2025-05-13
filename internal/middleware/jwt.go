@@ -24,9 +24,9 @@ func GenerateToken(name []byte) (string, error) {
 	return tkString, nil
 }
 
-func VerifyToken(name string) error {
-	token, err := jwt.Parse(name, func(token *jwt.Token) (interface{}, error) {
-		return os.Getenv("SECRET_KEY"), nil
+func VerifyToken(tk string) error {
+	token, err := jwt.Parse(tk, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 
 	if err != nil {

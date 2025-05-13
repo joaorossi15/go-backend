@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaorossi15/gobh/internal/middleware"
 	"github.com/joaorossi15/gobh/internal/user"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	userLoginHandler := user.UserLoginHandler(userRepo)
 
 	mux.HandleFunc("POST /user/post/", createUserHandler)
-	mux.HandleFunc("GET /user/get/", getUserHandler)
+	mux.HandleFunc("GET /user/get/", middleware.AuthMiddleware(getUserHandler))
 	mux.HandleFunc("POST /user/login/", userLoginHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
