@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -21,4 +22,20 @@ func GenerateToken(name []byte) (string, error) {
 	}
 
 	return tkString, nil
+}
+
+func VerifyToken(name string) error {
+	token, err := jwt.Parse(name, func(token *jwt.Token) (interface{}, error) {
+		return os.Getenv("SECRET_KEY"), nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
