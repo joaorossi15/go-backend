@@ -22,9 +22,11 @@ func main() {
 	userRepo := user.CreateUserRepo(pool)
 	createUserHandler := user.PostUserHandler(userRepo)
 	getUserHandler := user.GetUserByIdHandler(userRepo)
+	userLoginHandler := user.UserLoginHandler(userRepo)
 
 	mux.HandleFunc("POST /user/post/", createUserHandler)
 	mux.HandleFunc("GET /user/get/", getUserHandler)
+	mux.HandleFunc("POST /user/login/", userLoginHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

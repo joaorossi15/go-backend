@@ -3,10 +3,8 @@ services:
   db:
     image: "postgres:16"     
     container_name: db
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=postgres
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -42,8 +40,8 @@ services:
     depends_on: 
       db:
         condition: service_healthy
-    environment: 
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    env_file: 
+      - .env
     networks: 
       - backend
 

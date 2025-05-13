@@ -30,6 +30,15 @@ func (usr *UserR) Get(ctx context.Context, name string) (int64, string, error) {
 	return user.ID, user.Username, nil
 }
 
+func (usr *UserR) GetHashedPassword(ctx context.Context, name string) ([]byte, error) {
+	user, err := usr.q.GetUser(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.Password, nil
+}
+
 func (usr *UserR) Create(ctx context.Context, name string, password []byte) (int64, error) {
 	pwd, err := bcrypt.GenerateFromPassword(password, 14)
 	if err != nil {
