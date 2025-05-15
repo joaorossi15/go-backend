@@ -42,3 +42,24 @@ func (m *MessageRepo) GetConversationMessages(ctx context.Context, senderID int6
 	return messages, nil
 }
 
+func (m *MessageRepo) GetUserSentMessages(ctx context.Context, userID int64) ([]sqlc.Message, error) {
+	messages, err := m.q.SelectSentMessages(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
+
+}
+
+func (m *MessageRepo) GetUserReceivedMessages(ctx context.Context, userID int64) ([]sqlc.Message, error) {
+	messages, err := m.q.SelectRecMessages(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
+
+}
