@@ -29,3 +29,16 @@ func (m *MessageRepo) CreateMessage(ctx context.Context, senderID int64, recID i
 	return message.ID, nil
 }
 
+func (m *MessageRepo) GetConversationMessages(ctx context.Context, senderID int64, recID int64) ([]sqlc.Message, error) {
+	messages, err := m.q.SelectConvMessages(ctx, sqlc.SelectConvMessagesParams{
+		SenderID: senderID,
+		RecID:    recID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
+}
+
