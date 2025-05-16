@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaorossi15/gobh/internal/chat"
 	"github.com/joaorossi15/gobh/internal/message"
 	"github.com/joaorossi15/gobh/internal/middleware"
 	"github.com/joaorossi15/gobh/internal/user"
@@ -30,12 +31,17 @@ func main() {
 	createMessageHandler := message.CreateMessageHandler(messageRepo)
 	getMessageHandler := message.GetConversationMessagesHandler(messageRepo, userRepo)
 
+	hub := chat.NewHub()
+	go hub.Run(context.Background())
+	clientHandler := chat.ChatHandler(hub)
+
 	mux.HandleFunc("POST /user/post/", createUserHandler)
 	mux.HandleFunc("GET /user/get/", middleware.AuthMiddleware(getUserHandler))
 	mux.HandleFunc("POST /user/login/", userLoginHandler)
 
 	mux.HandleFunc("POST /message/create/", middleware.AuthMiddleware(createMessageHandler))
 	mux.HandleFunc("GET /message/get/{recID}", middleware.AuthMiddleware(middleware.NameMiddleware(getMessageHandler)))
+	mux.HandleFunc("/ws/{userID}/{roomID}", clientHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
