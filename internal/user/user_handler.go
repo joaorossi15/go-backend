@@ -116,11 +116,6 @@ func UserLoginHandler(repo *UserR) http.HandlerFunc {
 			return
 		}
 
-		if r.Header.Get("Content-Type") != "application/json" {
-			http.Error(w, "type not allowed", http.StatusUnsupportedMediaType)
-			return
-		}
-
 		var rq UserInput
 
 		if err := json.NewDecoder(r.Body).Decode(&rq); err != nil {
@@ -149,7 +144,7 @@ func UserLoginHandler(repo *UserR) http.HandlerFunc {
 		}
 
 		// generate jwt token
-		token, err := middleware.GenerateToken([]byte(name))
+		token, err := middleware.GenerateToken(name)
 		if err != nil {
 			http.Error(w, "internal server error: "+err.Error(), http.StatusInternalServerError)
 			return

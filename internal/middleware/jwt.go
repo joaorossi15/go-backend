@@ -8,13 +8,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(name []byte) (string, error) {
-	token := jwt.NewWithClaims(
-		jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"username": name,
-			"exp":      time.Now().Add(time.Hour * 12).Unix(),
-		})
+func GenerateToken(name string) (string, error) {
+	claims := MyCustomClaims{
+		Username: name,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(12 * time.Hour)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tkString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {

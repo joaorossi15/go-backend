@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaorossi15/gobh/internal/message"
 	"github.com/joaorossi15/gobh/internal/middleware"
 	"github.com/joaorossi15/gobh/internal/user"
 )
@@ -25,9 +26,16 @@ func main() {
 	getUserHandler := user.GetUserByIdHandler(userRepo)
 	userLoginHandler := user.UserLoginHandler(userRepo)
 
+	messageRepo := message.CreateMessageRepo(pool)
+	createMessageHandler := message.CreateMessageHandler(messageRepo)
+	getMessageHandler := message.GetConversationMessagesHandler(messageRepo, userRepo)
+
 	mux.HandleFunc("POST /user/post/", createUserHandler)
 	mux.HandleFunc("GET /user/get/", middleware.AuthMiddleware(getUserHandler))
 	mux.HandleFunc("POST /user/login/", userLoginHandler)
+
+	mux.HandleFunc("POST /message/create/", middleware.AuthMiddleware(createMessageHandler))
+	mux.HandleFunc("GET /message/get/{recID}", middleware.NameMiddleware(getMessageHandler))
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

@@ -18,6 +18,7 @@ func AuthMiddleware(next http.Handler) http.HandlerFunc {
 			http.Error(w, "invalid jwt token", http.StatusUnauthorized)
 			return
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }
