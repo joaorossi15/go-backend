@@ -25,18 +25,18 @@ func GenerateToken(name string) (string, error) {
 	return tkString, nil
 }
 
-func VerifyToken(tk string) error {
-	token, err := jwt.Parse(tk, func(token *jwt.Token) (interface{}, error) {
+func VerifyToken(tk string) (*jwt.Token, error) {
+	token, err := jwt.ParseWithClaims(tk, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
 
-	return nil
+	return token, nil
 }

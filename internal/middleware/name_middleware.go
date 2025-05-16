@@ -3,8 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -20,22 +18,17 @@ type MyCustomClaims struct {
 
 func NameMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := r.Header.Get("Authorization")
+		v := r.Context().Value(userKey)
+		tk, ok := v.(string)
 
-		if auth == "" {
-			http.Error(w, "missing auth header", http.StatusUnauthorized)
+		if !ok {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		splitToken := strings.Split(auth, "Bearer ")
-		auth = splitToken[1]
-
-		token, err := jwt.ParseWithClaims(auth, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("SECRET_KEY")), nil
-		})
-
+		token, err := VerifyToken(tk)
 		if err != nil {
-			http.Error(w, "invalid jwt token", http.StatusUnauthorized)
+			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 

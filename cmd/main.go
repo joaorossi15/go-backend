@@ -35,7 +35,7 @@ func main() {
 	mux.HandleFunc("POST /user/login/", userLoginHandler)
 
 	mux.HandleFunc("POST /message/create/", middleware.AuthMiddleware(createMessageHandler))
-	mux.HandleFunc("GET /message/get/{recID}", middleware.NameMiddleware(getMessageHandler))
+	mux.HandleFunc("GET /message/get/{recID}", middleware.AuthMiddleware(middleware.NameMiddleware(getMessageHandler)))
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
