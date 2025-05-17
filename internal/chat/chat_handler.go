@@ -9,13 +9,11 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
+	"github.com/joaorossi15/gobh/internal/middleware"
+	"github.com/joaorossi15/gobh/internal/user"
 )
 
-type ctxKey string
-
-const userIDKey ctxKey = "userID"
-
-func ChatHandler(hub *Hub) http.HandlerFunc {
+func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet ||
 			r.Header.Get("Upgrade") != "websocket" {
@@ -23,7 +21,19 @@ func ChatHandler(hub *Hub) http.HandlerFunc {
 			return
 		}
 
-		userID, _ := strconv.Atoi(r.PathValue("userID"))
+		v := r.Context().Value(middleware.UserIDKey)
+		userName, ok := v.(string)
+		if !ok {
+			http.Error(w, "error gegtting user: "+userName, http.StatusBadRequest)
+			return
+		}
+		userID, _, err := repo.Get(r.Context(), userName)
+
+		if err != nil {
+			http.Error(w, "error gegtting user: "+userName, http.StatusBadRequest)
+			return
+		}
+
 		roomID, _ := strconv.Atoi(r.PathValue("roomID"))
 
 		// handshake
@@ -105,4 +115,3 @@ func (c *Client) writeMessagesToClients() {
 		}
 	}
 }
-

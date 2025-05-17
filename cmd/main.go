@@ -33,7 +33,7 @@ func main() {
 
 	hub := chat.NewHub()
 	go hub.Run(context.Background())
-	clientHandler := chat.ChatHandler(hub)
+	chatHandler := chat.ChatHandler(hub, userRepo)
 
 	mux.HandleFunc("POST /user/post/", createUserHandler)
 	mux.HandleFunc("GET /user/get/", middleware.AuthMiddleware(getUserHandler))
@@ -41,7 +41,7 @@ func main() {
 
 	mux.HandleFunc("POST /message/create/", middleware.AuthMiddleware(createMessageHandler))
 	mux.HandleFunc("GET /message/get/{recID}", middleware.AuthMiddleware(middleware.NameMiddleware(getMessageHandler)))
-	mux.HandleFunc("/ws/{userID}/{roomID}", clientHandler)
+	mux.HandleFunc("/ws/{roomID}", middleware.AuthMiddleware(middleware.NameMiddleware(chatHandler)))
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
