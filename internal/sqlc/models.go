@@ -8,14 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Message struct {
-	ID        int64
-	SenderID  int64
-	RecID     int64
-	Body      string
-	CreatedAt pgtype.Timestamptz
-}
-
 type User struct {
 	ID        int64
 	Username  string

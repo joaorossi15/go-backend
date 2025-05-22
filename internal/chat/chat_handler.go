@@ -24,13 +24,13 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 		v := r.Context().Value(middleware.UserIDKey)
 		userName, ok := v.(string)
 		if !ok {
-			http.Error(w, "error gegtting user: "+userName, http.StatusBadRequest)
+			http.Error(w, "error getting user: "+userName, http.StatusBadRequest)
 			return
 		}
 		userID, _, err := repo.Get(r.Context(), userName)
 
 		if err != nil {
-			http.Error(w, "error gegtting user: "+userName, http.StatusBadRequest)
+			http.Error(w, "error getting user: "+userName, http.StatusBadRequest)
 			return
 		}
 
@@ -53,7 +53,6 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 
 		hub.register <- client
 
-		// another goroutine
 		go client.writeMessagesToClients()
 
 		if err := client.readMessagesFromClients(); err != nil {
@@ -84,7 +83,7 @@ func (c *Client) readMessagesFromClients() error {
 	}
 }
 
-func (c *Client) writeMessagesToClients() {
+func (c *Client) <Up>riteMessagesToClients() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
