@@ -64,6 +64,7 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 	}
 }
 
+// read frames written in the websocket and writes to hub.broadcast
 func (c *Client) readMessagesFromClients(ctx context.Context) error {
 	c.conn.SetReadLimit(4096)
 
@@ -81,6 +82,7 @@ func (c *Client) readMessagesFromClients(ctx context.Context) error {
 	}
 }
 
+// read channel client.send and writes to the websocket for the client
 func (c *Client) writeMessagesToClients() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
