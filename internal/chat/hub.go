@@ -17,6 +17,7 @@ type Client struct {
 	hub  *Hub
 	conn *websocket.Conn
 	send chan Message
+	name string
 	id   int64
 	room int64
 }
@@ -51,7 +52,7 @@ func (h *Hub) Run(ctx context.Context) {
 			}
 		case msg := <-h.broadcast:
 			for c := range h.clients {
-				if c.room == msg.RoomID {
+				if c.room == msg.RoomID && c.id != msg.SenderID {
 					c.send <- msg
 				}
 			}

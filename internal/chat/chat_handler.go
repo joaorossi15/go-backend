@@ -2,13 +2,13 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/coder/websocket"
-	"github.com/coder/websocket/wsjson"
 	"github.com/joaorossi15/gobh/internal/middleware"
 	"github.com/joaorossi15/gobh/internal/user"
 )
@@ -48,6 +48,7 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 			conn: c,
 			send: make(chan Message, 32),
 			id:   int64(userID),
+			name: userName,
 			room: int64(roomID),
 		}
 
@@ -55,7 +56,7 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 
 		go client.writeMessagesToClients()
 
-		if err := client.readMessagesFromClients(); err != nil {
+		if err := client.readMessagesFromClients(r.Context()); err != nil {
 			log.Printf("error reading: %v", err)
 		}
 
@@ -63,14 +64,11 @@ func ChatHandler(hub *Hub, repo *user.UserR) http.HandlerFunc {
 	}
 }
 
-func (c *Client) readMessagesFromClients() error {
+func (c *Client) readMessagesFromClients(ctx context.Context) error {
 	c.conn.SetReadLimit(4096)
 
 	for {
-		var body struct {
-			Body string `json:"body"`
-		}
-		err := wsjson.Read(context.Background(), c.conn, &body)
+		_, body, err := c.conn.Read(ctx)
 		if err != nil {
 			return err
 		}
@@ -78,12 +76,12 @@ func (c *Client) readMessagesFromClients() error {
 		c.hub.broadcast <- Message{
 			RoomID:   c.room,
 			SenderID: c.id,
-			Body:     body.Body,
+			Body:     fmt.Sprintf("%s: %s", c.name, string(body)),
 		}
 	}
 }
 
-func (c *Client) <Up>riteMessagesToClients() {
+func (c *Client) writeMessagesToClients() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
@@ -98,7 +96,10 @@ func (c *Client) <Up>riteMessagesToClients() {
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			err := wsjson.Write(ctx, c.conn, msg)
+			var err error
+
+			err = c.conn.Write(ctx, websocket.MessageText, []byte(msg.Body))
+
 			cancel()
 			if err != nil {
 				return
@@ -110,6 +111,7 @@ func (c *Client) <Up>riteMessagesToClients() {
 				cancel()
 				return
 			}
+			log.Printf("GOOD PING TO CLIENT %v", c.id)
 			cancel()
 		}
 	}
