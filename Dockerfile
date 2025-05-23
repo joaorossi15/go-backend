@@ -16,20 +16,6 @@ COPY . .
 
 RUN go build -o main ./cmd
 
-
-# Runtime stage
-
-FROM alpine:latest
-
-RUN apk add --no-cache ca-certificates && \
-    adduser -D appuser
-
-WORKDIR /app
-
-COPY --from=builder /app/main /app/main
-
-USER appuser
-
 EXPOSE 8080
 
 CMD ["./main"]
